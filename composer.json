@@ -1,0 +1,16 @@
+{
+    "name": "nellinger/spiel-sven",
+    "authors": [
+        {
+            "name": "nellinger",
+            "email": "nellinger@vonaffenfels.de"
+        }
+    ],
+    "require": {},
+
+    "autoload": {
+        "psr-4": {
+            "Games\\": "Games/"
+        }
+    }
+}
