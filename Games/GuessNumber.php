@@ -3,6 +3,7 @@
 namespace Games;
 
 use Exception;
+use Src\UserInOut;
 
 class GuessNumber implements Game
 {
@@ -13,9 +14,8 @@ class GuessNumber implements Game
      * @param $autoGame
      * @throws Exception
      */
-    public function __construct($min, $max, $autoGame)
+    public function __construct($min, $max)
     {
-        $this->autoGame = $autoGame;
         $this->correct = false;
         $this->higher = false;
         $this->counter = 0;
@@ -27,15 +27,25 @@ class GuessNumber implements Game
 
     public function runGame()
     {
+        $userInOut = new UserInOut();
+
+        $autoGame = $userInOut->askUser("autoGame (y/n)");
+
+        if ($autoGame === "y")
+        {
+            $mode = $userInOut->askUser("Mode (s/r)");
+
+        }
+
         while (!$this->correct)
         {
-            if ($this->autoGame)
+            if ($autoGame === "y")
             {
-                $this->guess = $this->getGuessFromAi();
+                $this->guess = $this->getGuessFromAi($mode, $userInOut);
 
             }else
             {
-                $this->guess = $this->getGuessFromUser();
+                $this->guess = $this->getGuessFromUser($userInOut);
             }
 
             $this->counter++;
@@ -53,19 +63,19 @@ class GuessNumber implements Game
                 $this->higher = true;
             }
 
-            $this->answerUser();
+            $this->answerUser($userInOut);
         }
     }
 
 
-    private function getGuessFromUser(): int
+    private function getGuessFromUser(UserInOut $userInOut): int
     {
-        $answer = readline("Your guess: ");
+        $answer = $userInOut->askUser("Your guess: ");
         return intval($answer);
     }
 
 
-    private function getGuessFromAi(): int
+    private function getGuessFromAi(string $mode, UserInOut $userInOut): int
     {
         if (isset($this->guess))
         {
@@ -78,29 +88,36 @@ class GuessNumber implements Game
             }
         }
 
-        $number = random_int($this->aiLowest+1, $this->aiHighest-1);
+        if ($mode === "s")
+        {
+            $number = round(($this->aiLowest + $this->aiHighest) /2);
 
-        print("AI guessed $number");
+        }elseif ($mode === "r")
+        {
+            $number = random_int($this->aiLowest+1, $this->aiHighest-1);
+        }
+
+        $userInOut->answerUser("AI guessed $number");
 
         return $number;
 
     }
 
 
-    private function answerUser()
+    private function answerUser(UserInOut $userInOut)
     {
         if ($this->correct)
         {
-            print("\nYou are right. Congratulations!!\n");
-            print("\nYou needed $this->counter guesses\n");
+            $userInOut->answerUser("\nYou are right. Congratulations!!\n");
+            $userInOut->answerUser("\nYou needed $this->counter guesses\n");
 
         }elseif ($this->higher)
         {
-            print("\nHigher\n");
+            $userInOut->answerUser("\nHigher\n");
 
         }else
         {
-            print("\nLower\n");
+            $userInOut->answerUser("\nLower\n");
         }
 
     }
